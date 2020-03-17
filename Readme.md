@@ -2,10 +2,12 @@
 
 # Table of Contents
 1. [chroot](#chroot)
-2. [Docker](#docker)
+2. [docker vs chroot](#docker%20vs%20chroot)
+3. [docker lingo](docker%20lingo)
+4. [mounting a volume](mounting%20%a%20volume)
 
 ## chroot
-=========
+
 Please refer to [Linux / Unix: chroot Command Examples](https://www.cyberciti.biz/faq/unix-linux-chroot-command-examples-usage-syntax/) for more info on this. 
 
 A chroot on Unix operating systems is an operation that changes the apparent root directory for the current running process and its children. A program that is run in such a modified environment cannot name (and therefore normally cannot access) files outside the designated directory tree. The modified environment is called a chroot jail.
@@ -56,8 +58,41 @@ A chrooted bash and ls application is locked into a particular directory called 
 ![Pictorial description](https://media.geeksforgeeks.org/wp-content/uploads/chroot-command.jpg)
 
 
-## docker
-=========
+## docker vs chroot
+
+Docker allows to isolate a process at multiple levels through namespaces:
+
+1. mnt namespace provides a root filesystem (this one can be compared to chroot I guess)
+2. pid namespace so the process only sees itself and its children
+3. network namespace which allows the container to have its dedicated network stack
+4. user namespace (quite new) which allows a non root user on a host to be mapped with the root user within the container
+5. uts provides dedicated hostname
+6. ipc provides dedicated shared memory
+
+All of this adds more isolation than chroot provides
+
+The extra bells and whistles is called process isolation, a container gets its own [namespace](https://en.wikipedia.org/wiki/Linux_namespaces) from the host kernel, that means the program in the container can't try to read kernel memory or eat more RAM than allowed.
+
+It also isolates network stacks, so two process can listen on port 8080 for exemple, you'll have to handle the routing at host level, there's no magic here, but this allow handling the routing at one place and avoid modifying the process configuration to listen to a free port.
+
+Secondly a chroot is still read/write, any change is permanent, a docker container using aufs will start from a clean filesystem each time you launch the container (changes are kept if you stop/start it IIRC).
+
+So while a container may be thought of as process namespace + chroot, the reality is a little more complex.
+
+
+## docker lingo
+
+An **image** is a representation of everything you wish to have, but think of it as configuration. You’ve specified what you’d like to be in this image, and now, based on the image, you can create many containers.
+
+A **container** is a running instance of a Docker image. Containers run the actual applications. A container includes an application and all of its dependencies. It shares the kernel with other containers and runs as an isolated process in user space on the host OS.
+
+A **Docker daemon** is a background service running on the host that manages the building, running and distributing Docker containers.
+
+**Docker client** is a command-line tool you use to interact with the Docker daemon. You call it by using the command docker on a terminal. You can use Kitematic to get a GUI version of the Docker client. 
+
+A **Docker store** is a registry of Docker images. There is a public registry on Docker.com where you can set up private registries for your team’s use. You can also easily create such a registry in Azure.
+
+
 
 
 Finally through the use of dockerfiles we will 
