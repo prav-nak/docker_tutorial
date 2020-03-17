@@ -4,11 +4,27 @@
 1. [chroot](#chroot)
 2. [Docker](#docker)
 
-chroot
+##chroot
 ======
 A chroot on Unix operating systems is an operation that changes the apparent root directory for the current running process and its children. A program that is run in such a modified environment cannot name (and therefore normally cannot access) files outside the designated directory tree. The modified environment is called a chroot jail.
 
-docker
+
+###chroot command examples
+In this example, build a mini-jail for testing purpose with bash and ls command only. First, set jail location using mkdir command:
+
+```console
+$ J=$HOME/jail
+```
+Create directories inside $J:
+
+```console
+$ mkdir -p $J
+$ mkdir -p $J/{bin,lib64,lib}
+$ cd $J
+```
+
+
+##docker
 ======
 
 
