@@ -4,12 +4,14 @@
 1. [chroot](#chroot)
 2. [Docker](#docker)
 
-##chroot
-======
+## chroot
+=========
+Please refer to [Linux / Unix: chroot Command Examples](https://www.cyberciti.biz/faq/unix-linux-chroot-command-examples-usage-syntax/) for more info on this. 
+
 A chroot on Unix operating systems is an operation that changes the apparent root directory for the current running process and its children. A program that is run in such a modified environment cannot name (and therefore normally cannot access) files outside the designated directory tree. The modified environment is called a chroot jail.
 
 
-###chroot command examples
+chroot command examples
 In this example, build a mini-jail for testing purpose with bash and ls command only. First, set jail location using mkdir command:
 
 ```console
@@ -23,9 +25,39 @@ $ mkdir -p $J/{bin,lib64,lib}
 $ cd $J
 ```
 
+Copy /bin/bash and /bin/ls into $J/bin/ location using cp command:
+```console
+$ cp -v /bin/{bash,ls} $J/bin
+```
 
-##docker
-======
+Copy required libs in $J. Use ldd command to print shared library dependencies for bash:
+```console
+$ ldd /bin/bash
+```
+
+Copy libs in $J correctly from the above output:
+```console
+$ cp -v /lib64/libtinfo.so.5 /lib64/libdl.so.2 /lib64/libc.so.6 /lib64/ld-linux-x86-64.so.2 $J/lib64/
+```
+
+Copy required libs in $J for ls command. Use ldd command to print shared library dependencies for ls command:
+```console
+$ ldd /bin/ls
+```
+
+Finally, chroot into your new jail:
+```console
+$ sudo chroot $J /bin/bash
+```
+
+A chrooted bash and ls application is locked into a particular directory called $HOME/$J and unable to wander around the rest of the directory tree, and sees that directory as its “/” (root) directory. This is a tremendous boost to security if configured properly. 
+
+
+![Pictorial description](https://media.geeksforgeeks.org/wp-content/uploads/chroot-command.jpg)
+
+
+## docker
+=========
 
 
 Finally through the use of dockerfiles we will 
