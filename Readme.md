@@ -1,17 +1,20 @@
-# Tutorial on commonly used features in docker
-
 # Table of Contents
-1. [chroot](#chroot)
-2. [docker vs chroot](#docker%20vs%20chroot)
-3. [docker lingo](docker%20lingo)
-4. [mounting a volume](mounting%20%a%20volume)
+1. [introduction](#introduction)
+2. [chroot](#chroot)
+3. [docker vs chroot](#docker%20vs%20chroot)
+4. [docker lingo](docker%20lingo)
+5. [mounting a volume](mounting%20%a%20volume)
+
+
+## introduction
+This repo is a collection of information from various resources on the web and stackoverflow that is aimed to better understand the docker utility. We being with the basic linux utility [chroot](https://www.cyberciti.biz/faq/unix-linux-chroot-command-examples-usage-syntax/), discuss how docker does more, define the lingo commonly used in docker and finally go through an example dockerfile to create ubuntu based linux dev environment. The dev env will check out a linux image, create a user with sudo privileges, install git features, install a popular shell (ohmyzsh) and finally we show how to mount a volume for persistent storage that is accessible from the containers. Remember that the default storage from a container is ephimeral.
 
 ## chroot
+chroot command in Linux/Unix system is used to change the root directory. Every process/command in Linux/Unix like systems has a current working directory called root directory. It changes the root directory for currently running processes as well as its child processes. A process/command that runs in such a modified environment cannot access files outside the root directory. This modified environment is known as “chroot jail” or “jailed directory”.
 
-Please refer to [Linux / Unix: chroot Command Examples](https://www.cyberciti.biz/faq/unix-linux-chroot-command-examples-usage-syntax/) for more info on this. 
+![Pictorial description](https://media.geeksforgeeks.org/wp-content/uploads/chroot-command.jpg)
 
 A chroot on Unix operating systems is an operation that changes the apparent root directory for the current running process and its children. A program that is run in such a modified environment cannot name (and therefore normally cannot access) files outside the designated directory tree. The modified environment is called a chroot jail.
-
 
 chroot command examples
 In this example, build a mini-jail for testing purpose with bash and ls command only. First, set jail location using mkdir command:
@@ -55,9 +58,6 @@ $ sudo chroot $J /bin/bash
 A chrooted bash and ls application is locked into a particular directory called $HOME/$J and unable to wander around the rest of the directory tree, and sees that directory as its “/” (root) directory. This is a tremendous boost to security if configured properly. 
 
 
-![Pictorial description](https://media.geeksforgeeks.org/wp-content/uploads/chroot-command.jpg)
-
-
 ## docker vs chroot
 
 Docker allows to isolate a process at multiple levels through namespaces:
@@ -91,7 +91,6 @@ A **Docker daemon** is a background service running on the host that manages the
 **Docker client** is a command-line tool you use to interact with the Docker daemon. You call it by using the command docker on a terminal. You can use Kitematic to get a GUI version of the Docker client. 
 
 A **Docker store** is a registry of Docker images. There is a public registry on Docker.com where you can set up private registries for your team’s use. You can also easily create such a registry in Azure.
-
 
 
 
