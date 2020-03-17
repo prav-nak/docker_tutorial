@@ -1,18 +1,15 @@
 # Tutorial on commonly used features in docker
 
 # Table of Contents
-1. [Example](#example)
-2. [Example2](#example2)
-3. [Third Example](#third-example)
-4. [Fourth Example](#fourth-examplehttpwwwfourthexamplecom)
+1. [chroot](#chroot)
+2. [Docker](#docker)
 
-In this tutorial we will learn chroot, docker, docker compose etc
-
-
-chroot (From the wikipedia)
-===========================
+chroot
+======
 A chroot on Unix operating systems is an operation that changes the apparent root directory for the current running process and its children. A program that is run in such a modified environment cannot name (and therefore normally cannot access) files outside the designated directory tree. The modified environment is called a chroot jail.
 
+docker
+======
 
 
 Finally through the use of dockerfiles we will 
