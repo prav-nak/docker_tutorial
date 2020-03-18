@@ -2,12 +2,14 @@
 1. [introduction](#introduction)
 2. [chroot](#chroot)
 3. [docker vs chroot](#docker%20vs%20chroot)
-4. [docker lingo](docker%20lingo)
-5. [mounting a volume](mounting%20%a%20volume)
-
+4. [docker lingo](#docker%20lingo)
+5. [docker](#docker)
+6. [useful commands](#useful%commands)
+7. [images and layers](#images%20and%20layers)
+8. [mounting a volume](#mounting%20%a%20volume)
 
 ## introduction
-This repo is a collection of information from various resources on the web and stackoverflow that is aimed to better understand the docker utility. We being with the basic linux utility [chroot](https://www.cyberciti.biz/faq/unix-linux-chroot-command-examples-usage-syntax/), discuss how docker does more, define the lingo commonly used in docker and finally go through an example dockerfile to create ubuntu based linux dev environment. The dev env will check out a linux image, create a user with sudo privileges, install git features, install a popular shell (ohmyzsh) and finally we show how to mount a volume for persistent storage that is accessible from the containers. Remember that the default storage from a container is ephimeral.
+This repo is a collection of information from various resources on the web and stackoverflow that is aimed to better understand the docker utility to serve as personal reference. We begin with the basic linux utility [chroot](https://www.cyberciti.biz/faq/unix-linux-chroot-command-examples-usage-syntax/), discuss how docker does more, define the lingo commonly used in docker and finally go through an example dockerfile to create ubuntu based linux dev environment. The dev env will check out a linux image, create a user with sudo privileges, install git features, install a popular shell (ohmyzsh) and finally we show how to mount a volume for persistent storage that is accessible from the containers. Remember that the default storage from a container is ephimeral.
 
 ## chroot
 chroot command in Linux/Unix system is used to change the root directory. Every process/command in Linux/Unix like systems has a current working directory called root directory. It changes the root directory for currently running processes as well as its child processes. A process/command that runs in such a modified environment cannot access files outside the root directory. This modified environment is known as “chroot jail” or “jailed directory”.
@@ -16,7 +18,7 @@ chroot command in Linux/Unix system is used to change the root directory. Every 
 
 A chroot on Unix operating systems is an operation that changes the apparent root directory for the current running process and its children. A program that is run in such a modified environment cannot name (and therefore normally cannot access) files outside the designated directory tree. The modified environment is called a chroot jail.
 
-chroot command examples
+### chroot command examples
 In this example, build a mini-jail for testing purpose with bash and ls command only. First, set jail location using mkdir command:
 
 ```console
@@ -69,9 +71,9 @@ Docker allows to isolate a process at multiple levels through namespaces:
 5. uts provides dedicated hostname
 6. ipc provides dedicated shared memory
 
-All of this adds more isolation than chroot provides
+All of this adds more isolation than chroot provides.
 
-The extra bells and whistles is called process isolation, a container gets its own [namespace](https://en.wikipedia.org/wiki/Linux_namespaces) from the host kernel, that means the program in the container can't try to read kernel memory or eat more RAM than allowed.
+These extra bells and whistles is called process isolation, a container gets its own [namespace](https://en.wikipedia.org/wiki/Linux_namespaces) from the host kernel, that means the program in the container can't try to read kernel memory or eat more RAM than allowed.
 
 It also isolates network stacks, so two process can listen on port 8080 for exemple, you'll have to handle the routing at host level, there's no magic here, but this allow handling the routing at one place and avoid modifying the process configuration to listen to a free port.
 
@@ -92,32 +94,115 @@ A **Docker daemon** is a background service running on the host that manages the
 
 A **Docker store** is a registry of Docker images. There is a public registry on Docker.com where you can set up private registries for your team’s use. You can also easily create such a registry in Azure.
 
+## docker
+A Dockerfile is a text document that contains all the commands a user could call on the command line to assemble an image. Using docker build, users can create an automated build that executes several command-line instructions in succession. Docker builds images automatically by reading the instructions from a Dockerfile -- a text file that contains all commands, in order, needed to build a given image. A Docker image consists of read-only layers each of which represents a Dockerfile instruction. The layers are stacked and each one is a delta of the changes from the previous layer. 
 
+An example dockerfile would like the following:
+```console
+FROM ubuntu:18.04
+COPY . /app
+RUN make /app
+CMD python /app/app.py
+```
 
-Finally through the use of dockerfiles we will 
+Each instruction creates one layer:
+
+* FROM creates a layer from the ubuntu:18.04 Docker image.
+* COPY adds files from your Docker client’s current directory.
+* RUN builds your application with make.
+* CMD specifies what command to run within the container.
+
+When you run an image and generate a container, you add a new writable layer (the “container layer”) on top of the underlying layers. All changes made to the running container, such as writing new files, modifying existing files, and deleting files, are written to this thin writable container layer.
+
+We will not use dockerfiles to 
 1. set up ubuntu based linux dev environment
 2. add a user with sudo permissions
 3. install vim, git etc.
 4. install ohmyzsh
-5. mount a volume for ephimeral data storage
+5. mount a volume for persistent data storage
 
 
-## Usage
-0. Ensure you have docker installed and running
-1. Clone this repo
-2. Open terminal and run, `chmod +x build.sh`
-3. And run `chmod +x run.sh`
-4. Run `./build.sh`
-5. Run `./run.sh`
+```console
+FROM ubuntu:latest
+LABEL maintainer="aa <bb@cc.dd>"
 
-Easy! This should give you a linux prompt for a user called "devuser" with password "p@ssword1". This user is a sudoer.
+RUN apt-get update && \
+    apt-get install -y \
+    sudo \
+    curl \
+    git-core \
+    gnupg \
+    linuxbrew-wrapper \
+    locales \
+    zsh \
+    wget \
+    vim \
+    nano \
+    npm \
+    fonts-powerline && \
+    locale-gen en_US.UTF-8 && \
+    adduser --quiet --disabled-password --shell /bin/zsh --home /home/devuser --gecos "User" devuser && \
+    echo "devuser:userpassword" | chpasswd &&  usermod -aG sudo devuser
 
-# If you wish to change the zsh theme, 
+USER devuser
+ENV TERM xterm
+CMD ["zsh"]
+```
 
-1. cd ~
-2. sudo chmod +x installthemes.sh
-3. ./installthemes.sh
-4. Edit your .zshrc, and change the theme (I like agnoster)
-5. Optionally capture it using docker commit (see https://winsmarts.com/snapshot-a-docker-container-20df59bbd473)
+The first line says that your base image will be ubuntu:latest. Doing this tells Docker to use the Docker registry and find an image that matches this criterion. Specifically, the image you’ll use is this: https://hub.docker.com/_/ubuntu/.
 
-Rock on!
+The ADD command is used to copy files/directories into a Docker image. It can copy data in three ways:
+
+* Copy files from the local storage to a destination in the Docker image.
+* Copy a tarball from the local storage and extract it automatically inside a destination in the Docker image.
+* Copy files from a URL to a destination inside the Docker image.
+
+
+![add command](https://www.educative.io/api/edpresso/shot/6371088869097472/image/5249592310366208)
+
+
+### steps
+* Creating an image: In the same directory as where the Dockerfile resides, issue the following command:
+```console
+docker build --rm -f Dockerfile -t ubuntu:img .
+```
+Running this command creates the image for you.
+
+* The Docker image is ready and when you run it, you are effectively creating a container. To run it, use:
+```console
+docker run --rm -it ubuntu:img
+```
+
+## useful commands
+To remove all unused images, if you do not do this, you will run out of disk space
+
+ - sudo docker image prune
+ - sudo docker system prune -a
+
+
+ - docker image build: Build an image from a Dockerfile
+ - docker image history: Show the history of an image
+ - docker image import: Import the contents from a tarball to create a filesystem image
+ - docker image inspect: Display detailed information on one or more images
+ - docker image load: Load an image from a tar archive or STDIN
+ - docker image ls: List images
+ - docker image prune: Remove unused images
+ - docker image pull: Pull an image or a repository from a registry
+ - docker image push: Push an image or a repository to a registry
+ - docker image rm: Remove one or more images
+ - docker image save; Save one or more images to a tar archive (streamed to STDOUT by default)
+ - docker image tag: Create a tag TARGET_IMAGE that refers to SOURCE_IMAGE
+
+## images and layers
+By default all files created inside a container are stored on a writable container layer. This means that:
+
+* The data doesn’t persist when that container no longer exists, and it can be difficult to get the data out of the container if another process needs it.
+* A container’s writable layer is tightly coupled to the host machine where the container is running. You can’t easily move the data somewhere else.
+* Writing into a container’s writable layer requires a storage driver to manage the filesystem. The storage driver provides a union filesystem, using the Linux kernel. This extra abstraction reduces performance as compared to using data volumes, which write directly to the host filesystem.
+
+Docker has two options for containers to store files in the host machine, so that the files are persisted even after the container stops: *volumes*, and *bind mounts*.
+
+
+
+## mounting a volume
+
