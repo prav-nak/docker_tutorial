@@ -7,6 +7,7 @@
 6. [useful commands](#useful%commands)
 7. [images and layers](#images%20and%20layers)
 8. [mounting a volume](#mounting%20%a%20volume)
+9. [finally](#finally)
 
 ## introduction
 This repo is a collection of information from various resources on the web and stackoverflow that is aimed to better understand the docker utility to serve as personal reference. We begin with the basic linux utility [chroot](https://www.cyberciti.biz/faq/unix-linux-chroot-command-examples-usage-syntax/), discuss how docker does more, define the lingo commonly used in docker and finally go through an example dockerfile to create ubuntu based linux dev environment. The dev env will check out a linux image, create a user with sudo privileges, install git features, install a popular shell (ohmyzsh) and finally we show how to mount a volume for persistent storage that is accessible from the containers. Remember that the default storage from a container is ephimeral.
@@ -233,3 +234,8 @@ docker run --rm -it -v /home/user/Desktop/test:/datavol ubuntu:img
 ```
 
 What we have done here is that we have mapped the host folder /home/user/Desktop/test to a volume /datavol that will be mounted inside our container.
+
+## finally
+Finally,
+* to build the image, execute build.sh script
+* to run the container, execute run_and_mount_volume.sh script
