@@ -95,7 +95,7 @@ A **Docker daemon** is a background service running on the host that manages the
 A **Docker store** is a registry of Docker images. There is a public registry on Docker.com where you can set up private registries for your team’s use. You can also easily create such a registry in Azure.
 
 ## docker
-A Dockerfile is a text document that contains all the commands a user could call on the command line to assemble an image. Using docker build, users can create an automated build that executes several command-line instructions in succession. Docker builds images automatically by reading the instructions from a Dockerfile -- a text file that contains all commands, in order, needed to build a given image. A Docker image consists of read-only layers each of which represents a Dockerfile instruction. The layers are stacked and each one is a delta of the changes from the previous layer. 
+A Dockerfile is a text document that contains all the commands a user could call on the command line to assemble an image. Using docker build, users can create an automated build that executes several command-line instructions in succession. Docker builds images automatically by reading the instructions from a Dockerfile -- a text file that contains all commands, in order, needed to build a given image. A Docker image consists of read-only layers each of which represents a Dockerfile instruction. The layers are stacked and each one is a delta of the changes from the previous layer.
 
 An example dockerfile would like the following:
 ```console
@@ -179,7 +179,6 @@ To remove all unused images, if you do not do this, you will run out of disk spa
  - sudo docker image prune
  - sudo docker system prune -a
 
-
  - docker image build: Build an image from a Dockerfile
  - docker image history: Show the history of an image
  - docker image import: Import the contents from a tarball to create a filesystem image
@@ -200,9 +199,37 @@ By default all files created inside a container are stored on a writable contain
 * A container’s writable layer is tightly coupled to the host machine where the container is running. You can’t easily move the data somewhere else.
 * Writing into a container’s writable layer requires a storage driver to manage the filesystem. The storage driver provides a union filesystem, using the Linux kernel. This extra abstraction reduces performance as compared to using data volumes, which write directly to the host filesystem.
 
-Docker has two options for containers to store files in the host machine, so that the files are persisted even after the container stops: *volumes*, and *bind mounts*.
+Docker has two options for containers to store files in the host machine for persistent storage, so that the files are persisted even after the container stops: *volumes*, and *bind mounts*.
 
+Bind mounts exist on the host file system and being managed by the host maintainer.
 
+With Volumes we can design our data effectively and decouple it from the host and other parts of the system by storing it dedicated remote locations (Cloud for example) and integrate it with external services like backups, monitoring, encryption and hardware management.
+
+### Good use cases for volumes
+Volumes are the preferred way to persist data in Docker containers and services. Some use cases for volumes include:
+
+Sharing data among multiple running containers. If you don’t explicitly create it, a volume is created the first time it is mounted into a container. When that container stops or is removed, the volume still exists. Multiple containers can mount the same volume simultaneously, either read-write or read-only. Volumes are only removed when you explicitly remove them.
+
+When the Docker host is not guaranteed to have a given directory or file structure. Volumes help you decouple the configuration of the Docker host from the container runtime.
+
+When you want to store your container’s data on a remote host or a cloud provider, rather than locally.
+
+When you need to back up, restore, or migrate data from one Docker host to another, volumes are a better choice. You can stop containers using the volume, then back up the volume’s directory (such as /var/lib/docker/volumes/<volume-name>).
+
+### Good use cases for bind mounts
+In general, you should use volumes where possible. Bind mounts are appropriate for the following types of use case:
+
+Sharing configuration files from the host machine to containers. This is how Docker provides DNS resolution to containers by default, by mounting /etc/resolv.conf from the host machine into each container.
+
+Sharing source code or build artifacts between a development environment on the Docker host and a container. For instance, you may mount a Maven target/ directory into a container, and each time you build the Maven project on the Docker host, the container gets access to the rebuilt artifacts.
+
+If you use Docker for development this way, your production Dockerfile would copy the production-ready artifacts directly into the image, rather than relying on a bind mount.
+
+When the file or directory structure of the Docker host is guaranteed to be consistent with the bind mounts the containers require.
 
 ## mounting a volume
+```console
+docker run --rm -it -v /home/user/Desktop/test:/datavol ubuntu:img
+```
 
+What we have done here is that we have mapped the host folder /home/user/Desktop/test to a volume /datavol that will be mounted inside our container.
